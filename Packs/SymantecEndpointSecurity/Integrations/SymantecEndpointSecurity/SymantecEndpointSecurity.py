@@ -243,6 +243,11 @@ def calculate_network_severity(result: dict) -> tuple[int, str | None]:
     malicious_description = None
     categories = result.get('categories', [])
 
+    # For Uncategorized Indicators, risk_level is 5 by default.
+    # Consider this combination as No Reputation available
+    if 'Uncategorized' in categories and risk_level == 5:
+        return (Common.DBotScore.NONE, None)
+
     if not risk_level:
         score = Common.DBotScore.NONE
     elif risk_level <= 5:
@@ -253,16 +258,27 @@ def calculate_network_severity(result: dict) -> tuple[int, str | None]:
     else:
         score = Common.DBotScore.SUSPICIOUS
 
-    reputation_score = Common.DBotScore.NONE
-    if reputation == 'BAD' or has_intersection(MALICIOUS_CATEGORIES, categories):
-        reputation_score = Common.DBotScore.BAD
+    category_score = Common.DBotScore.NONE
+    if has_intersection(MALICIOUS_CATEGORIES, categories):
+        category_score = Common.DBotScore.BAD
         malicious_description = f'Categorized as {",".join(categories)} with {reputation} reputation'
     elif has_intersection(SUSPICIOUS_CATEGORIES, categories):
-        reputation_score = Common.DBotScore.SUSPICIOUS
-    elif len(categories) > 1 or (len(categories) == 1 and categories[0] != 'Uncategorized'):
-        reputation_score = Common.DBotScore.GOOD
+        category_score = Common.DBotScore.SUSPICIOUS
+    elif len(categories) > 0 and 'Uncategorized' not in categories:
+        category_score = Common.DBotScore.GOOD
 
-    final_score = reputation_score if reputation_score > score else score
+    reputation_score = Common.DBotScore.NONE
+    if reputation == 'GOOD':
+        reputation_score = Common.DBotScore.GOOD
+    elif reputation == 'BAD':
+        reputation_score = Common.DBotScore.BAD
+
+    final_score = category_score if category_score > score else score
+
+    # If we don't have a Score yet, and the Indicator is categorized, use the Reputation
+    # If the Indicator is not categorized, do not use the Reputation, as it defaults to BAD and wrongly indicates BAD
+    if final_score == Common.DBotScore.NONE and 'Uncategorized' not in categories:
+        final_score = reputation_score
     return (final_score, malicious_description)
 
 

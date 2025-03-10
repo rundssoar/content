@@ -26,7 +26,8 @@ DEFAULT_RELIABILITY = DBotScoreReliability.B
 MALICIOUS_CATEGORIES = ['Malicious Outbound Data/Botnets', 'Malicious Sources/Malnets', 'Phishing', 'Proxy Avoidance']
 SUSPICIOUS_CATEGORIES = ['Compromised Sites', 'Dynamic DNS Host', 'Hacking', 'Placeholders', 'Potentially Unwanted Software',
                          'Remote Access', 'Spam', 'Suspicious'
-                         'Violence/Intolerance', 'Child Pornography', 'Gore/Extreme', 'Nudity', 'Pornography'
+                         'Violence/Intolerance', 'Child Pornography', 'Gore/Extreme', 'Nudity', 'Pornography',
+                         "Scam/Questionable Legality", "Piracy/Copyright Concerns"
                          ]
 
 insight_context_prefix = {
